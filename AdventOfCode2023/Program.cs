@@ -5,8 +5,9 @@
         static void Main(string[] args)
         {
             Console.WriteLine("Hello, World!");
-            Day1();
-            Day2();
+            //Day1();
+            //Day2();
+            Day3();
         }
 
         static void Day1()
@@ -153,6 +154,123 @@
 
             Console.WriteLine($"possibleGamesSum: {possibleGamesSum}");
             Console.WriteLine($"powerSum: {powerSum}");
+        }
+
+        /// <summary>
+        /// The code is super gross.  It is not optimized at all, there are almost certainly better examples to work off of.
+        /// It also lack any sort of comments and it is certainly not self-documenting.
+        /// Good luck if you try to use it :).
+        /// </summary>
+        static void Day3()
+        {
+            char[] ignoreChars = { '.', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9' };
+            string[] raw = File.ReadAllLines("input/day3full.txt");
+            int gridWidth = raw[0].Length;
+            int gridHeight = raw.Length;
+            int partSum = 0;
+
+            char[,] grid = new char[gridWidth, gridHeight];
+
+            for (int i = 0; i < gridHeight; i++)
+            {
+                string line = raw[i];
+                for (int j = 0; j < gridWidth; j++)
+                {
+                    grid[j, i] = line[j];
+                }
+            }
+
+            // do not do this with tuples
+            List<((int x, int y) pos, int partNumber)> potentialGears = new List<((int x, int y) pos, int partNumber)>();
+
+            for (int y = 0; y < gridHeight; y++)
+            {
+                for (int x = 0; x < gridWidth; x++)
+                {
+                    if (int.TryParse(grid[x, y].ToString(), out _) && grid[x, y] != '.')
+                    {
+
+                        bool endOfPart = false;
+                        string partString = grid[x, y].ToString();
+                        int xStart = x-1;
+                        int yStart = y-1;
+                        int yEnd = y+2;
+                        x = int.Min(x+1, gridWidth-1);
+                        do
+                        {
+                            if (int.TryParse(grid[x, y].ToString(), out _) && grid[x, y] != '.')
+                            {
+                                partString += grid[x, y].ToString();
+                                x++;
+                            }
+                            else
+                            {
+                                endOfPart = true;
+                            }
+                        } while (!endOfPart && x < gridWidth);
+
+                        x++;
+                        if (x >= gridWidth)
+                        {
+                            x = gridWidth-1;
+                        }
+                        if (xStart < 0)
+                        {
+                            xStart = 0;
+                        }
+                        if (yStart < 0)
+                        {
+                            yStart = 0;
+                        }
+                        if (yEnd > gridHeight)
+                        {
+                            yEnd = gridHeight;
+                        }
+
+
+                        for (int xx = xStart; xx < x; xx++)
+                        {
+                            for (int yy = yStart; yy < yEnd; yy++)
+                            {
+                                char currentChar = grid[xx, yy];
+                                if (!ignoreChars.Contains(currentChar))
+                                {
+                                    partSum += int.Parse(partString);
+                                    if (currentChar == '*')
+                                    {
+                                        potentialGears.Add(((xx, yy), int.Parse(partString)));
+                                    }
+                                    break;
+                                }
+                            }
+                        }
+
+                        if (x < gridWidth - 2)
+                        {
+                            x = int.Max(x - 2, 0);
+                        }
+                    }
+                }
+            }
+
+            int gearRatioSum = 0;
+            HashSet<(int x, int y)> gearPositions = new HashSet<(int x, int y)>();
+            foreach (((int x, int y) pos, int partNumber) gear in potentialGears)
+            {
+                if (!gearPositions.Contains(gear.pos))
+                {
+                    int multiplier = 1;
+                    IEnumerable<int> parts= potentialGears.Where(g => g.pos.x == gear.pos.x && g.pos.y == gear.pos.y).Select(g=>g.partNumber);
+                    if (parts.Count() <= 1) continue; // gross, don't use this syntax
+                    foreach (int part in parts)
+                    {
+                        multiplier *= part;
+                    }
+                    gearRatioSum += multiplier;
+                    gearPositions.Add(gear.pos);
+                }
+            }
+            Console.ReadKey();
         }
     }
 }
