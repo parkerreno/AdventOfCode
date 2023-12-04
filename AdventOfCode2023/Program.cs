@@ -276,6 +276,51 @@
 
         static void Day4()
         {
+            string[] raw = File.ReadAllLines("input/day4full.txt");
+            int pointsTotal = 0;
+            Dictionary<int, int> scratchCards = new Dictionary<int, int>();
+            int cardNum = 0;
+
+            foreach(string card in raw)
+            {
+                if (!scratchCards.TryAdd(cardNum, 1)){
+                    scratchCards[cardNum] += 1;
+                }
+                //int cardPoints = 0;
+                string[] cardNumbers = card.Split(":")[1].Split("|");
+                List<int> winningNumbers = cardNumbers[0].Trim().Replace("  ", " ").Split(" ").Select(x => int.Parse(x)).ToList();
+                List<int> selectedNumbers = cardNumbers[1].Trim().Replace("  ", " ").Split(" ").Select(x => int.Parse(x)).ToList();
+
+                int winCount = selectedNumbers.Where(x => winningNumbers.Contains(x)).Count();
+                for (int i = cardNum + 1; i < raw.Length && i < winCount + cardNum + 1; i++)
+                {
+                    if (!scratchCards.TryAdd(i, 1 * scratchCards[cardNum]))
+                    {
+                        scratchCards[i] += 1 * scratchCards[cardNum];
+                    }
+                }
+
+                    //foreach (int selectedNumber in selectedNumbers)
+                    //{
+                    //    if (winningNumbers.Contains(selectedNumber))
+                    //    {
+                    //        if (cardPoints == 0)
+                    //        {
+                    //            cardPoints = 1;
+                    //        }
+                    //        else
+                    //        {
+                    //            cardPoints *= 2;
+                    //        }
+                    //    }
+                    //}
+                    //pointsTotal += cardPoints;
+                    cardNum++;
+            }
+
+            int cardsTotal = scratchCards.Sum(x => x.Value);
+
+            Console.WriteLine($"cardstotal: {cardsTotal}");
 
         }
     }
