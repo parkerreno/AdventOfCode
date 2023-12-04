@@ -7,7 +7,8 @@
             Console.WriteLine("Hello, World!");
             //Day1();
             //Day2();
-            Day3();
+            //Day3();
+            Day4();
         }
 
         static void Day1()
@@ -271,6 +272,11 @@
                 }
             }
             Console.ReadKey();
+        }
+
+        static void Day4()
+        {
+
         }
     }
 }
