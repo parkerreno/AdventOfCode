@@ -343,7 +343,7 @@
             {
                 long waysToWin = 0;
                 Console.WriteLine($"time: {record.time}, distance: {record.distance}");
-                for (long i = 14; i <= record.time; i++)
+                for (long i = 0; i <= record.time; i++)
                 {
                     long distanceTraveled = i * (record.time - i);
                     if (distanceTraveled > record.distance)
