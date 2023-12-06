@@ -8,7 +8,8 @@
             //Day1();
             //Day2();
             //Day3();
-            Day4();
+            //Day4();
+            Day6();
         }
 
         static void Day1()
@@ -322,6 +323,38 @@
 
             Console.WriteLine($"cardstotal: {cardsTotal}");
 
+        }
+
+        static void Day6()
+        {
+            string[] raw = File.ReadAllLines("input/day6full.txt");
+            List<(long, long)> timeDistanceRecords = new List<(long, long)>();
+
+            string[] rawTimes = raw[0].Split(":")[1].Trim().Split(" ").Where(x=>!string.IsNullOrWhiteSpace(x)).ToArray();
+            string[] rawDistances = raw[1].Split(":")[1].Trim().Split(" ").Where(x=>!string.IsNullOrWhiteSpace(x)).ToArray();
+
+            for (int i = 0; i < rawTimes.Length; i++)
+            {
+                timeDistanceRecords.Add((long.Parse(rawTimes[i]), long.Parse(rawDistances[i])));
+            }
+
+            long winMultiplier = 1;
+            foreach ((long time, long distance) record in timeDistanceRecords)
+            {
+                long waysToWin = 0;
+                Console.WriteLine($"time: {record.time}, distance: {record.distance}");
+                for (long i = 14; i <= record.time; i++)
+                {
+                    long distanceTraveled = i * (record.time - i);
+                    if (distanceTraveled > record.distance)
+                    {
+                        waysToWin++;
+                    }
+                }
+                winMultiplier *= waysToWin;
+            }
+
+            Console.WriteLine($"winMultiplier: {winMultiplier}");
         }
     }
 }
