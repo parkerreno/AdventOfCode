@@ -9,7 +9,8 @@
             //Day2();
             //Day3();
             //Day4();
-            Day6();
+            //Day6();
+            Day7();
         }
 
         static void Day1()
@@ -262,7 +263,7 @@
                 if (!gearPositions.Contains(gear.pos))
                 {
                     int multiplier = 1;
-                    IEnumerable<int> parts= potentialGears.Where(g => g.pos.x == gear.pos.x && g.pos.y == gear.pos.y).Select(g=>g.partNumber);
+                    IEnumerable<int> parts = potentialGears.Where(g => g.pos.x == gear.pos.x && g.pos.y == gear.pos.y).Select(g => g.partNumber);
                     if (parts.Count() <= 1) continue; // gross, don't use this syntax
                     foreach (int part in parts)
                     {
@@ -282,9 +283,10 @@
             Dictionary<int, int> scratchCards = new Dictionary<int, int>();
             int cardNum = 0;
 
-            foreach(string card in raw)
+            foreach (string card in raw)
             {
-                if (!scratchCards.TryAdd(cardNum, 1)){
+                if (!scratchCards.TryAdd(cardNum, 1))
+                {
                     scratchCards[cardNum] += 1;
                 }
                 //int cardPoints = 0;
@@ -301,22 +303,22 @@
                     }
                 }
 
-                    //foreach (int selectedNumber in selectedNumbers)
-                    //{
-                    //    if (winningNumbers.Contains(selectedNumber))
-                    //    {
-                    //        if (cardPoints == 0)
-                    //        {
-                    //            cardPoints = 1;
-                    //        }
-                    //        else
-                    //        {
-                    //            cardPoints *= 2;
-                    //        }
-                    //    }
-                    //}
-                    //pointsTotal += cardPoints;
-                    cardNum++;
+                //foreach (int selectedNumber in selectedNumbers)
+                //{
+                //    if (winningNumbers.Contains(selectedNumber))
+                //    {
+                //        if (cardPoints == 0)
+                //        {
+                //            cardPoints = 1;
+                //        }
+                //        else
+                //        {
+                //            cardPoints *= 2;
+                //        }
+                //    }
+                //}
+                //pointsTotal += cardPoints;
+                cardNum++;
             }
 
             int cardsTotal = scratchCards.Sum(x => x.Value);
@@ -330,8 +332,8 @@
             string[] raw = File.ReadAllLines("input/day6full.txt");
             List<(long, long)> timeDistanceRecords = new List<(long, long)>();
 
-            string[] rawTimes = raw[0].Split(":")[1].Trim().Split(" ").Where(x=>!string.IsNullOrWhiteSpace(x)).ToArray();
-            string[] rawDistances = raw[1].Split(":")[1].Trim().Split(" ").Where(x=>!string.IsNullOrWhiteSpace(x)).ToArray();
+            string[] rawTimes = raw[0].Split(":")[1].Trim().Split(" ").Where(x => !string.IsNullOrWhiteSpace(x)).ToArray();
+            string[] rawDistances = raw[1].Split(":")[1].Trim().Split(" ").Where(x => !string.IsNullOrWhiteSpace(x)).ToArray();
 
             for (int i = 0; i < rawTimes.Length; i++)
             {
@@ -355,6 +357,146 @@
             }
 
             Console.WriteLine($"winMultiplier: {winMultiplier}");
+        }
+
+        static void Day7()
+        {
+            string[] raw = File.ReadAllLines("input/day7full.txt");
+
+            List<(List<int> cards, int bid)> hands = new List<(List<int> cards, int bid)>();
+            foreach (string line in raw)
+            {
+                string[] split = line.Split(" ");
+                int bid = int.Parse(split[1]);
+                List<int> cards = new List<int>();
+                foreach (char c in split[0])
+                {
+                    if (int.TryParse(c.ToString(), out int result))
+                    {
+                        cards.Add(result);
+                    }
+                    else
+                    {
+                        switch (c)
+                        {
+                            case 'A':
+                                cards.Add(14);
+                                break;
+                            case 'K':
+                                cards.Add(13);
+                                break;
+                            case 'Q':
+                                cards.Add(12);
+                                break;
+                            case 'J':
+                                cards.Add(1); // modified for part 2
+                                break;
+                            case 'T':
+                                cards.Add(10);
+                                break;
+                        }
+                    }
+                }
+
+                hands.Add((cards, bid));
+            }
+
+            hands = hands.OrderBy(x => x.cards, new HandComparer()).ToList();
+
+            int totalWinnings = 0;
+            for (int i = 0; i < hands.Count; i++)
+            {
+                totalWinnings += hands[i].bid * (i + 1);
+            }
+
+            Console.Write(totalWinnings);
+        }
+
+        public class HandComparer : IComparer<List<int>>
+        {
+            public int Compare(List<int>? x, List<int>? y)
+            {
+                int val = HandRank(x) - HandRank(y);
+                if (val != 0)
+                {
+                    return val;
+                }
+                else
+                {
+                    for (int i = 0; i < x.Count; i++)
+                    {
+                        if (x[i] > y[i])
+                        {
+                            return 1;
+                        }
+                        else if (x[i] < y[i])
+                        {
+                            return -1;
+                        }
+                        else
+                        {
+                            if (i == x.Count - 1)
+                            {
+                                return 0;
+                            }
+                        }
+                    }
+                }
+
+                // we shouldn't get here
+                throw new Exception();
+                return 0;
+            }
+
+            private int HandRank(List<int> hand)
+            {
+                Dictionary<int, int> cardCounts = new Dictionary<int, int>();
+                foreach (int card in hand)
+                {
+                    if (!cardCounts.TryAdd(card, 1))
+                    {
+                        cardCounts[card] += 1;
+                    }
+                }
+
+                // for part 2
+                if (cardCounts.TryGetValue(1, out int jokerCount))
+                {
+                    cardCounts[1] = 0;
+
+                    int maxKey = cardCounts.MaxBy(x => x.Value).Key;
+                    cardCounts[maxKey] += jokerCount;
+                }
+
+                if (cardCounts.Any(x=>x.Value == 5))
+                {
+                    return 6;
+                }
+                else if (cardCounts.Any(x=>x.Value ==4))
+                {
+                    return 5;
+                }
+                else if (cardCounts.Any(x=>x.Value == 3) && cardCounts.Any(x=>x.Value == 2))
+                {
+                    return 4;
+                }
+                else if (cardCounts.Any(x=>x.Value == 3))
+                {
+                    return 3;
+                }
+                else if (cardCounts.Where(x=> x.Value == 2).Count() == 2)
+                {
+                    return 2;
+                }
+                else if (cardCounts.Any(x=>x.Value == 2))
+                {
+                    return 1;
+                }
+                else
+                {
+                    return 0;
+                }
+            }
         }
     }
 }
