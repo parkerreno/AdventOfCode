@@ -10,7 +10,8 @@
             //Day3();
             //Day4();
             //Day6();
-            Day7();
+            //Day7();
+            Day8();
         }
 
         static void Day1()
@@ -497,6 +498,51 @@
                     return 0;
                 }
             }
+        }
+
+        static void Day8()
+        {
+            string[] raw = File.ReadAllLines("input/day8full.txt");
+            string instructions = raw[0];
+
+            Dictionary<string, (string left, string right)> map = new Dictionary<string, (string left, string right)>();
+
+            string finalLocationKey = "ZZZ";
+            string firstKey = "AAA";
+
+            for (int i = 2; i < raw.Length; i++)
+            {
+                string[] loc = raw[i].Split("=");
+                loc[0] = loc[0].Trim();
+                loc[1] = loc[1].Trim().Replace("(","").Replace(")","");
+
+                map.Add(loc[0], (loc[1].Split(", ")[0].Trim(), loc[1].Split(", ")[1].Trim()));
+            }
+
+            string currentKey = firstKey;
+            int counter = 0;
+            bool endOfMap = false;
+            do
+            {
+                var location = map[currentKey];
+                char direction = instructions[counter % instructions.Length];
+                if (direction == 'L')
+                {
+                    currentKey = location.left;
+                }
+                else if (direction == 'R')
+                {
+                    currentKey = location.right;
+                }
+                counter++;
+
+                if (currentKey == finalLocationKey)
+                {
+                    endOfMap = true;
+                }
+            } while (!endOfMap);
+
+            Console.WriteLine($"counter: {counter}");
         }
     }
 }
