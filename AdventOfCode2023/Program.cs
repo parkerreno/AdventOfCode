@@ -11,7 +11,9 @@
             //Day4();
             //Day6();
             //Day7();
-            Day8();
+            //Day8();
+            Day9();
+            Console.ReadLine();
         }
 
         static void Day1()
@@ -519,30 +521,93 @@
                 map.Add(loc[0], (loc[1].Split(", ")[0].Trim(), loc[1].Split(", ")[1].Trim()));
             }
 
-            string currentKey = firstKey;
-            int counter = 0;
+            string[] currentLocations = map.Keys.Where(x => x.EndsWith("A")).Take(4).ToArray();
+
+            //string currentKey = firstKey;
+            long counter = 0;
             bool endOfMap = false;
             do
             {
-                var location = map[currentKey];
-                char direction = instructions[counter % instructions.Length];
-                if (direction == 'L')
+                Parallel.For(0, currentLocations.Length, i =>
                 {
-                    currentKey = location.left;
-                }
-                else if (direction == 'R')
-                {
-                    currentKey = location.right;
-                }
+                    var location = map[currentLocations[i]];
+                    char direction = instructions[(int)(counter % instructions.Length)];
+                    if (direction == 'L')
+                    {
+                        currentLocations[i] = location.left;
+                    }
+                    else if (direction == 'R')
+                    {
+                        currentLocations[i] = location.right;
+                    }
+                });
+                //for (int i = 0; i < currentLocations.Length; i++)
+                //{
+                //    var location = map[currentLocations[i]];
+                //    char direction = instructions[(int)(counter % instructions.Length)];
+                //    if (direction == 'L')
+                //    {
+                //        currentLocations[i] = location.left;
+                //    }
+                //    else if (direction == 'R')
+                //    {
+                //        currentLocations[i] = location.right;
+                //    }
+                //}                
                 counter++;
 
-                if (currentKey == finalLocationKey)
+                if (currentLocations.All(x => x.EndsWith("Z")))
                 {
                     endOfMap = true;
                 }
             } while (!endOfMap);
 
             Console.WriteLine($"counter: {counter}");
+        }
+
+        static void Day9()
+        {
+            string[] raw = File.ReadAllLines("input/day9full.txt");
+            List<List<int>> sequences = raw.Select(x=>x.Split(" ").Select(y => int.Parse(y)).ToList()).ToList();
+
+            int total = 0;
+            foreach (List<int> sequence in sequences)
+            {
+                List<List<int>> diffs = new List<List<int>>();
+                diffs.Add(sequence);
+                do
+                {
+                    int previous = 0;
+                    List<int> newDiff = new List<int>();
+                    for (int i = 0; i < diffs.Last().Count; i++)
+                    {
+                        if (i == 0)
+                        {
+                            previous = diffs.Last()[i];
+                        }
+                        else
+                        {
+                            newDiff.Add(diffs.Last()[i] - previous);
+                            previous = diffs.Last()[i];
+                        }
+                    }
+                    diffs.Add(newDiff);
+                } while (diffs.Last().Any(x => x != 0));
+
+                // forwards extrap
+                //for (int i = diffs.Count - 1; i > 0; i--)
+                //{
+                //    diffs[i-1].Add(diffs[i-1].Last()+diffs[i].Last());
+                //}
+
+                // backwards extrap
+                for (int i = diffs.Count - 1; i > 0; i--)
+                {
+                    diffs[i-1].Insert(0,diffs[i-1].First()-diffs[i].First());
+                }
+
+                total += diffs[0].First();
+            }
         }
     }
 }
